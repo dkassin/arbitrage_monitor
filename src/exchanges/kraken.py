@@ -37,6 +37,7 @@ class KrakenAdapter(ExchangeAdapter):
                     continue
                 ticker = data["data"][0]
                 timestamp = datetime.now(timezone.utc)
+                
                 yield OrderBookUpdate(
                     exchange=self.exchange_name,
                     timestamp=timestamp,
@@ -52,7 +53,7 @@ class KrakenAdapter(ExchangeAdapter):
                     price=Decimal(str(ticker["ask"])),
                     volume=Decimal(str(ticker["ask_qty"]))
                 )
-                
+
             except json.JSONDecodeError as e:
                 # Invalid JSON - log and skip
                 print(f"[Kraken] JSON decode error: {e}")

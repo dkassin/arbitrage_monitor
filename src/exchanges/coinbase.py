@@ -42,6 +42,7 @@ class CoinbaseAdapter(ExchangeAdapter):
                     self.best_ask_price = Decimal(str(best_ask[0]))
                     self.best_ask_volume = Decimal(str(best_ask[1]))
                     timestamp = datetime.now(timezone.utc)
+
                     yield OrderBookUpdate(
                         exchange=self.exchange_name,
                         timestamp=timestamp,
