@@ -7,8 +7,14 @@ from src.core.statistics import StreamingStats
 from src.core.executor import OrderExecutor
 
 async def process_exchange_feed(adapter,order_book_manager,stats,signal_detector,executor):
-    await adapter.connect()
-    print(f"[{adapter.exchange_name.upper()}] Connected")
+    try:
+        await adapter.connect()
+        print(f"[{adapter.exchange_name.upper()}] Connected")
+    except Exception as e:
+        print(f"[{adapter.exchange_name.upper()}] Failed to connect: {e}")
+        print(f"[{adapter.exchange_name.upper()}] Continuing without this exchange...")
+        return
+        
     async for update in adapter.listen():
         # Update Orderbook with new price/volume
         order_book_manager.update(update)

@@ -9,7 +9,6 @@ from src.exchanges.base import ExchangeAdapter
 class CoinbaseAdapter(ExchangeAdapter):
     COINBASE_WS_URL = "wss://ws-feed.exchange.coinbase.com"
     PRODUCT_ID = "BTC-USD"
-    CHANNEL = "level2"
 
     def __init__(self):
         super().__init__("coinbase")
@@ -20,12 +19,16 @@ class CoinbaseAdapter(ExchangeAdapter):
         self.best_ask_volume: Optional[Decimal] = None
 
     async def connect(self) -> None:
-        self.ws = await websockets.connect(self.COINBASE_WS_URL)
+        self.ws = await websockets.connect(
+            self.COINBASE_WS_URL,
+            max_size=10 * 1024 * 1024
+            )
 
         subscribe_message = {
             "type": "subscribe",
+            "channels": ["level2_batch"],
             "product_ids": [self.PRODUCT_ID],
-            "channels": [self.CHANNEL],
+            
         }
         await self.ws.send(json.dumps(subscribe_message))
     
@@ -34,6 +37,9 @@ class CoinbaseAdapter(ExchangeAdapter):
             try:
                 data = json.loads(message)
                 msg_type = data.get("type")
+                if msg_type not in ["snapshot", "l2update"]:
+                    print(f"[Coinbase] Full message: {data}")
+                    
                 if msg_type == "snapshot":
                     best_bid = data["bids"][0]
                     self.best_bid_price = Decimal(str(best_bid[0]))
