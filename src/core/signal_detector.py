@@ -2,6 +2,8 @@ from typing import Optional
 from decimal import Decimal
 from datetime import datetime, timezone
 from src.models.types import OrderBookState, ArbitrageSignal
+import logging
+logger = logging.getLogger(__name__)
 
 class SignalDetector:
     def __init__(self, threshold_pct=Decimal(".001")):
@@ -20,9 +22,19 @@ class SignalDetector:
             coinbase_state.best_ask_price == Decimal("0")):
             return None
         
+        # Check for None (invalidated prices)
+        if (kraken_state.best_bid_price is None or
+            kraken_state.best_ask_price is None or
+            coinbase_state.best_bid_price is None or
+            coinbase_state.best_ask_price is None):
+            return None
+
+        spread_scenario_k_to_c = (kraken_state.best_bid_price / coinbase_state.best_ask_price) - Decimal("1")
+        spread_scenario_c_to_k = (coinbase_state.best_bid_price / kraken_state.best_ask_price) - Decimal("1")
+    
         # Buy Coinbase(at_ask), Sell Kraken(at_bid)
         if kraken_state.best_bid_price > coinbase_state.best_ask_price:
-            spread = (kraken_state.best_bid_price / coinbase_state.best_ask_price) - Decimal("1")
+            spread = spread_scenario_k_to_c
 
             if spread > self.threshold:
                 # Check deduplication
@@ -47,7 +59,7 @@ class SignalDetector:
 
         
         if coinbase_state.best_bid_price > kraken_state.best_ask_price:
-            spread = (coinbase_state.best_bid_price / kraken_state.best_ask_price) - Decimal("1")
+            spread = spread_scenario_c_to_k
 
             if spread > self.threshold:
                 # Check deduplication

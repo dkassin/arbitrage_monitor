@@ -17,6 +17,8 @@ class CoinbaseAdapter(ExchangeAdapter):
         self.best_bid_volume: Optional[Decimal] = None
         self.best_ask_price: Optional[Decimal] = None
         self.best_ask_volume: Optional[Decimal] = None
+        self.best_bid_needs_refresh = False
+        self.best_ask_needs_refresh = False
 
     async def connect(self) -> None:
         self.ws = await websockets.connect(
@@ -37,9 +39,10 @@ class CoinbaseAdapter(ExchangeAdapter):
             try:
                 data = json.loads(message)
                 msg_type = data.get("type")
+
                 if msg_type not in ["snapshot", "l2update"]:
                     print(f"[Coinbase] Full message: {data}")
-                    
+
                 if msg_type == "snapshot":
                     best_bid = data["bids"][0]
                     self.best_bid_price = Decimal(str(best_bid[0]))
@@ -66,15 +69,35 @@ class CoinbaseAdapter(ExchangeAdapter):
                 elif msg_type == "l2update":
                     changes = data.get("changes", [])
                     timestamp = datetime.now(timezone.utc)
+
                     bid_changed = False
                     ask_changed = False
                     for change in changes:
                         side = change[0]
                         price = Decimal(str(change[1]))
                         size = Decimal(str(change[2]))
+
+                        if size == Decimal("0"):
+                           # Mark that we need to refresh our cached best price
+                            if side == "buy" and price == self.best_bid_price:
+                                self.best_bid_price = None
+                                self.best_bid_volume = None
+                                self.best_bid_needs_refresh = True
+                            elif side == "sell" and price == self.best_ask_price:
+                                self.best_ask_price = None
+                                self.best_ask_volume = None
+                                self.best_ask_needs_refresh = True
+                            continue
+
                         if side == "buy":
+                            if self.best_bid_needs_refresh:
+                                # First update after removal - silently refresh internal state
+                                self.best_bid_price = price
+                                self.best_bid_volume = size
+                                self.best_bid_needs_refresh = False
+                                bid_changed = False  # Don't emit to prevent stats spike
                             # If better than current best bid, update
-                            if self.best_bid_price is None or price > self.best_bid_price:
+                            elif self.best_bid_price is None or price > self.best_bid_price:
                                 self.best_bid_price = price
                                 self.best_bid_volume = size
                                 bid_changed = True
@@ -83,8 +106,14 @@ class CoinbaseAdapter(ExchangeAdapter):
                                 self.best_bid_volume = size
                                 bid_changed = True
                         elif side == "sell":
+                            if self.best_ask_needs_refresh:
+                                # First update after removal - silently refresh internal state
+                                self.best_ask_price = price
+                                self.best_ask_volume = size
+                                self.best_ask_needs_refresh = False
+                                ask_changed = False  # Don't emit to prevent stats spike
                             # If better than current best ask, update
-                            if self.best_ask_price is None or price < self.best_ask_price:
+                            elif self.best_ask_price is None or price < self.best_ask_price:
                                 self.best_ask_price = price
                                 self.best_ask_volume = size
                                 ask_changed = True
@@ -93,6 +122,7 @@ class CoinbaseAdapter(ExchangeAdapter):
                                 self.best_ask_volume = size
                                 ask_changed = True
                     if bid_changed:
+                        # print(f"[COINBASE] Yielding bid: ${self.best_bid_price}")
                         yield OrderBookUpdate(
                             exchange=self.exchange_name,
                             timestamp=timestamp,

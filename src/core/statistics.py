@@ -10,12 +10,17 @@ class StreamingStats:
         self.previous_best_bid = None
 
     def update_bid(self, price, volume) -> None:
+        # Validate inputs - never process None or invalid values
+        if price is None or volume is None or price <= 0 or volume <= 0:
+            return
         # Updates max bid price
         if price > self.max_bid_price:
             self.max_bid_price = price
         # Calculates and updates max price change
         if self.previous_best_bid is not None:
             price_change = abs(price - self.previous_best_bid)
+            if price_change > Decimal("50"):  # Log big jumps
+                print(f"[{self.exchange_name}] BIG JUMP: ${self.previous_best_bid} -> ${price} (${price_change})")
             if price_change > self.max_bid_price_change:
                 self.max_bid_price_change = price_change
         # Adds volume to overall total
