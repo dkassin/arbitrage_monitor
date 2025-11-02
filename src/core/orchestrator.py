@@ -8,6 +8,7 @@ from src.core.order_book import OrderBookManager
 from src.core.signal_detector import SignalDetector
 from src.core.statistics import StreamingStats
 from src.core.executor import OrderExecutor
+from src.utils.retry import retry_with_backoff
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class Orchestrator:
     async def process_exchange_feed(self, adapter, stats):
         """Process updates from one exchange"""
         try:
-            await adapter.connect()
+            await retry_with_backoff(adapter.connect, max_retries=3)
             print(f"[{adapter.exchange_name.upper()}] Connected")
         except Exception as e:
             print(f"[{adapter.exchange_name.upper()}] Failed to connect: {e}")
@@ -66,14 +67,18 @@ class Orchestrator:
             coinbase_state = self.order_book_manager.get_state("coinbase")
             
             if kraken_state:
-                print(f"Kraken:   Bid ${kraken_state.best_bid_price:,.2f} | "
-                      f"Ask ${kraken_state.best_ask_price:,.2f} | "
-                      f"Max Δ ${self.kraken_stats.max_bid_price_change:,.2f}")
-            
+                print(f"Kraken:")
+                print(f"  Current: Bid ${kraken_state.best_bid_price:,.2f} | Ask ${kraken_state.best_ask_price:,.2f}")
+                print(f"  Stats:   Max Δ ${self.kraken_stats.max_bid_price_change:,.2f} | "
+                    f"Total Vol {self.kraken_stats.total_volume_at_best_bid:,.8f} BTC | "
+                    f"Max Bid ${self.kraken_stats.max_bid_price:,.2f}")
+                
             if coinbase_state:
-                print(f"Coinbase: Bid ${coinbase_state.best_bid_price:,.2f} | "
-                      f"Ask ${coinbase_state.best_ask_price:,.2f} | "
-                      f"Max Δ ${self.coinbase_stats.max_bid_price_change:,.2f}")
+                print(f"Coinbase:")
+                print(f"  Current: Bid ${coinbase_state.best_bid_price:,.2f} | Ask ${coinbase_state.best_ask_price:,.2f}")
+                print(f"  Stats:   Max Δ ${self.coinbase_stats.max_bid_price_change:,.2f} | "
+                    f"Total Vol {self.coinbase_stats.total_volume_at_best_bid:,.8f} BTC | "
+                    f"Max Bid ${self.coinbase_stats.max_bid_price:,.2f}")
             
             print(f"{'='*60}\n")
 
