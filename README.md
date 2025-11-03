@@ -20,7 +20,6 @@ A real-time cryptocurrency arbitrage monitoring system that tracks BTC/USD (easi
 1. **Clone the repository**
    git clone <your-repo-url>
    cd arbitrage_monitor
-```
 
 2. **Create a virtual environment**
    python -m venv venv
@@ -31,9 +30,8 @@ A real-time cryptocurrency arbitrage monitoring system that tracks BTC/USD (easi
 
 ## Running the Bot
 From the project root directory:
-```
+
 python -m src.main
-```
 
 **What you'll see:**
 - Connection confirmations for both exchanges
@@ -43,7 +41,6 @@ python -m src.main
 - Final statistics on shutdown (Ctrl+C)
 
 **Example output:**
-```
 Starting BTC/USD arbitrage monitor...
 [KRAKEN] Connected
 [COINBASE] Connected
@@ -64,31 +61,29 @@ Sell 0.00001232 BTC on coinbase at $110128.01
 Spread: 0.107%
 [KRAKEN] Buy order: HTTP 200 (expected 200/401)
 [COINBASE] Sell order: HTTP 401 (expected 200/401)
-```
+
 
 ## Configuration
 
 To adjust the arbitrage threshold (useful for testing in quiet markets), modify `src/core/orchestrator.py`:
-```python
+
 # Default: 0.1% threshold
 self.signal_detector = SignalDetector(threshold_pct=Decimal("0.001"))
 
 # For testing: 0.02% threshold to see more signals
 self.signal_detector = SignalDetector(threshold_pct=Decimal("0.0002"))
-```
 
 To adjust the statistics logging interval, modify the `run()` method in `src/core/orchestrator.py`:
-```python
+
 # Change from 30s to 60s
 stats_30s_task = asyncio.create_task(
     self.periodic_stats_logger(60)  # Change this value
 )
-```
 
 ## Testing
 
 Run the test suite:
-```
+
 # Run all tests
 pytest -v
 
@@ -96,7 +91,7 @@ pytest -v
 pytest tests/test_signal_detector.py -v
 pytest tests/test_statistics.py -v
 pytest tests/test_order_book.py -v
-```
+
 
 **Test Coverage (17 tests total):**
 - **Signal Detection** (8 tests): Arbitrage trigger logic, threshold boundaries, deduplication, edge cases
@@ -106,7 +101,7 @@ pytest tests/test_order_book.py -v
 Tests focus on core business logic and data quality validation, ensuring reliable arbitrage detection and accurate statistics reporting.
 
 ## Project Structure
-```
+
 arbitrage_monitor/
 ├── src/
 │   ├── main.py                  # Entry point - sets up logging and runs orchestrator
@@ -131,7 +126,7 @@ arbitrage_monitor/
 │   └── test_order_book.py       # Tests for order book state management
 ├── README.md
 └── requirements.txt
-```
+
 
 ## Technical Implementation
 ### Concurrency
