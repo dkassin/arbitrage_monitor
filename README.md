@@ -224,9 +224,9 @@ I primarily used claude as a development tool throughout the project.
 In terms of my process, I used claude to discuss my desired initial project structure.
 I also used it to discuss potential tradeoffs, making all decisions myself.
 
-I am not a fan of using autocoders, as such all the code was written by me with claude aiding with some boilerplate code, class skeletons, and some of the elaborite print statements which AI is spectacular at creating. 
+I am not a fan of using autocoders, as such all the code was written by me with claude aiding with some boilerplate code, class skeletons, and some of the elaborate print statements which AI is spectacular at creating. 
 
-I also feel like one of the strengths of AI is using it for debugging, specifically when you have a strong understand of what the code is doing, and where the potential bugs could be. I primarily looked to build a working project, and then went back and discussed possible areas to refactor in order to simplify and improve the code quality.
+I also feel like one of the strengths of AI is using it for debugging, specifically when you have a strong understanding of what the code is doing, and where the potential bugs could be. I primarily looked to build a working project, and then went back and discussed possible areas to refactor in order to simplify and improve the code quality.
 
 
 
