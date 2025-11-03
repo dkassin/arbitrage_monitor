@@ -11,6 +11,7 @@ class StreamingStats:
 
     def update_bid(self, price, volume) -> None:
         # Validate inputs - never process None or invalid values
+        ## This is an important guard for coinbase's 0 value edge case
         if price is None or volume is None or price <= 0 or volume <= 0:
             return
         # Updates max bid price
@@ -19,12 +20,17 @@ class StreamingStats:
         # Calculates and updates max price change
         if self.previous_best_bid is not None:
             price_change = abs(price - self.previous_best_bid)
-            if price_change > Decimal("50"):  # Log big jumps
+            # There were some interesting, bid price jumps, so we log this just to see
+            ## When it occurs, this was mostly for debugging but was interesting to see
+            if price_change > Decimal("50"): 
                 print(f"[{self.exchange_name}] BIG JUMP: ${self.previous_best_bid} -> ${price} (${price_change})")
+            
             if price_change > self.max_bid_price_change:
                 self.max_bid_price_change = price_change
+
         # Adds volume to overall total
         self.total_volume_at_best_bid += volume
+        
         # Updates previous best bid for future calcs
         self.previous_best_bid = price
 

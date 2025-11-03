@@ -14,13 +14,12 @@ logger = logging.getLogger(__name__)
 
 class Orchestrator:
     def __init__(self):
-        """Initialize all components"""
         # Core components
         self.order_book_manager = OrderBookManager()
         self.signal_detector = SignalDetector()
         self.executor = OrderExecutor()
         
-        # Stats trackers
+        # Stat trackers
         self.kraken_stats = StreamingStats("kraken")
         self.coinbase_stats = StreamingStats("coinbase")
         
@@ -29,7 +28,8 @@ class Orchestrator:
         self.coinbase = CoinbaseAdapter()
 
     async def process_exchange_feed(self, adapter, stats):
-        """Process updates from one exchange"""
+        # This has retry added
+        ## It also also the app to continue with only one exchange to view stats
         try:
             await retry_with_backoff(adapter.connect, max_retries=3)
             print(f"[{adapter.exchange_name.upper()}] Connected")
@@ -56,7 +56,9 @@ class Orchestrator:
                 await self.executor.execute_arbitrage(signal)
 
     async def periodic_stats_logger(self, interval):
-        """Log stats every N seconds"""
+        # Trading does not occur that often, so every 30 seconds it will provide
+        ## Stats and the big ask spread in the terminal as both a heartbeat and
+        ### To also provide information.
         while True:
             await asyncio.sleep(interval)
             
@@ -83,7 +85,7 @@ class Orchestrator:
             print(f"{'='*60}\n")
 
     async def run(self):
-        """Main orchestration - run all tasks concurrently"""
+        #Main orchestration, run all tasks concurrently
         try:
             # Create concurrent tasks for both exchanges
             kraken_task = asyncio.create_task(
@@ -95,7 +97,6 @@ class Orchestrator:
             )
 
             # Periodic stats logging tasks
-        
             stats_30s_task = asyncio.create_task(
                 self.periodic_stats_logger(30)
             )

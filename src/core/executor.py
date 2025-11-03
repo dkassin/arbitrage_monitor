@@ -23,13 +23,13 @@ class OrderExecutor:
 
         try:
             async with self.session.post(buy_url, json=buy_payload) as response:
-                print(f"[{signal.buy_exchange.upper()}] Buy order: HTTP {response.status} (expected 401/403)")
+                print(f"[{signal.buy_exchange.upper()}] Buy order: HTTP {response.status} (expected 200/401)")
         except Exception as e:
             print(f"[{signal.buy_exchange.upper()}] Buy order error: {e}")
 
         try:
             async with self.session.post(sell_url, json=sell_payload) as response:
-                print(f"[{signal.sell_exchange.upper()}] Sell order: HTTP {response.status} (expected 401/403)")
+                print(f"[{signal.sell_exchange.upper()}] Sell order: HTTP {response.status} (expected 200/401)")
         except Exception as e:
             print(f"[{signal.sell_exchange.upper()}] Sell order error: {e}")
 
