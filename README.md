@@ -180,11 +180,11 @@ Added simple retry logic with exponential backoff (2s, 4s, 8s) for WebSocket con
 There's validation at two levels - the adapters filter out bad data, and the stats classes double-check inputs aren't None or negative. This caught some edge cases during testing.
 
 Also, there is added functionality that will allow the system to run with only one websocket connection running after retry. It will not trade because of the validations that don't allow trading 
-if there isn't valid data in all orderbooks. This was due to the fact that during developement the kraken website went on maintenence for nearly all of saturday. So in order to debug the coinbase side of the system, this functionality was added.
+if there isn't valid data in all orderbooks. This was due to the fact that during development the kraken website went on maintenance for nearly all of saturday. So in order to debug the coinbase side of the system, this functionality was added.
 
 ### Edge Case: Coinbase size=0 Handling
 
-The trickiest bug I ran into was with Coinbase's size=0 messages. They use these to signal that a price level got removed from the order book. My first approach was to just skip these messages entirely, but that caused stale prices to stick around where the system would show a $110,451 ask when the real ask had moved to $110,318. I initially added constant logging of the bid/ask spread discrepenancies in order to monitor this. I was able to notice when spreads didn't make sense, and thus was able to determine I needed to go back and add some guard rails to both the statistics class and also the coinbase exchange.
+The trickiest bug I ran into was with Coinbase's size=0 messages. They use these to signal that a price level got removed from the order book. My first approach was to just skip these messages entirely, but that caused stale prices to stick around where the system would show a $110,451 ask when the real ask had moved to $110,318. I initially added constant logging of the bid/ask spread discrepancies in order to monitor this. I was able to notice when spreads didn't make sense, and thus was able to determine I needed to go back and add some guard rails to both the statistics class and also the coinbase exchange.
 
 The fix uses a "needs refresh" flag. When size=0 comes in for the current best price, we mark it as needing refresh and set the price to None. The next update silently refreshes our internal state without emitting an update to stats. This prevents both stale prices AND prevents massive artificial price jumps in the statistics (was seeing $13k+ jumps that weren't real).
 
@@ -202,13 +202,13 @@ Rather than storing a history of all price updates, I just track the running max
 
 ### Simple File Structure and OOP Design
 
-As with most things trading related, I feel like simple in many ways makes things both easier to debug and also more efficient. In that vein, I tried to keep everything very seperated and standardized. For example, the orderbooks are both the same even though the data is received from the exchanges in different formats. 
+As with most things trading related, I feel like simple in many ways makes things both easier to debug and also more efficient. In that vein, I tried to keep everything very separated and standardized. For example, the orderbooks are both the same even though the data is received from the exchanges in different formats. 
 
 I also felt like it was best to seperate each class into it's in own file, for both testing and debugging purpose but also to make the flow of information very easy to track and understand.
 
 ### No Full Orderbook Depth
 
-Also for the sake of this project, I choose to look at just the top bids and asks. This is more for simplicity's sake. If I were to have more time, I would have added some order book depth, solely for the fact that it more properly mocks how I would truly trade cross exchange arbitrage. I noticed opportunities where there were consistantly stale bids/offers on kraken where there was huge volume available. There would have been opporunities to buy full bitcoins.
+Also for the sake of this project, I choose to look at just the top bids and asks. This is more for simplicity's sake. If I were to have more time, I would have added some order book depth, solely for the fact that it more properly mocks how I would truly trade cross exchange arbitrage. I noticed opportunities where there were consistently stale bids/offers on kraken where there was huge volume available. There would have been opportunities to buy full bitcoins.
 
 ## Notes
 - I have actually traded cross exchange arbitrage before, some of the assumptions that were made here were that I have coins sitting on both exchanges, and also available USD.
@@ -218,6 +218,14 @@ Also for the sake of this project, I choose to look at just the top bids and ask
 - Both exchanges use different protocols as specified: Kraken Ticker v2 vs Coinbase Level2 batch
 - BTC markets are typically efficient - actual 0.1%+ arbitrage opportunities are rare in calm markets
     - For testing purpose I used .05% or even .02% to see the arbitrage executor work more 
+
+### Future Improvements
+
+If deploying this for real trading, I'd add:
+- **Runtime reconnection**: Detect mid-session WebSocket disconnects and automatically reconnect with state recovery
+- **Health checks**: Periodic heartbeat monitoring to detect stale connections
+- **Circuit breaker**: Stop trading if both feeds become unreliable
+- **Full order book depth**: For better liquidity analysis and slippage calculation
 
 ## AI Usage
 I primarily used claude as a development tool throughout the project.

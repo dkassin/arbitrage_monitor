@@ -122,9 +122,6 @@ class CoinbaseAdapter(ExchangeAdapter):
                                 self.best_ask_volume = size
                                 ask_changed = True
                     if bid_changed:
-                        # print(f"[COINBASE] Yielding bid: ${self.best_bid_price}")
-                        ## I left this bc it was informative for some of the issues I encountered,
-                        ## I wanted to be sure the bids and bid movement made sense
                         yield OrderBookUpdate(
                             exchange=self.exchange_name,
                             timestamp=timestamp,
