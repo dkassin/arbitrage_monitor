@@ -103,7 +103,7 @@ pytest tests/test_order_book.py -v
 Tests focus on core business logic and data quality validation, ensuring reliable arbitrage detection and accurate statistics reporting.
 
 ## Project Structure
-
+```
 arbitrage_monitor/
 ├── src/
 │   ├── main.py                  # Entry point - sets up logging and runs orchestrator
@@ -128,7 +128,7 @@ arbitrage_monitor/
 │   └── test_order_book.py       # Tests for order book state management
 ├── README.md
 └── requirements.txt
-
+```
 
 ## Technical Implementation
 ### Concurrency
