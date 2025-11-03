@@ -143,7 +143,7 @@ Asyncio made sense here since we're just waiting on network I/O most of the time
 ### No DB
 We did not need to store any data, so there was no need to set up a DB here.
 - If I were personally using this system I would most likely have it store trades in memory, and then
-print these to a csv when the program shut down. This would be for my own personal logging.
+create an output csv with all trades. This would be for my own personal logging and further investigation.
 
 ### Exchange Adapters
 
