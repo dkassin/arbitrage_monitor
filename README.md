@@ -45,6 +45,7 @@ Starting BTC/USD arbitrage monitor...
 [KRAKEN] Connected
 [COINBASE] Connected
 
+```
 ============================================================
 === 30s UPDATE @ 10:03:51 ===
 Kraken:
@@ -54,14 +55,15 @@ Coinbase:
   Current: Bid $110,142.97 | Ask $110,146.01
   Stats:   Max Δ $88.01 | Total Vol 116.05085999 BTC | Max Bid $110,432.00
 ============================================================
-
+```
+```
 [ARBITRAGE SIGNAL DETECTED]
 Buy 0.00001232 BTC on kraken at $110010.8
 Sell 0.00001232 BTC on coinbase at $110128.01
 Spread: 0.107%
 [KRAKEN] Buy order: HTTP 200 (expected 200/401)
 [COINBASE] Sell order: HTTP 401 (expected 200/401)
-
+```
 
 ## Configuration
 
