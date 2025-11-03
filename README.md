@@ -68,20 +68,20 @@ Spread: 0.107%
 ## Configuration
 
 To adjust the arbitrage threshold (useful for testing in quiet markets), modify `src/core/orchestrator.py`:
-
+```
 # Default: 0.1% threshold
 self.signal_detector = SignalDetector(threshold_pct=Decimal("0.001"))
 
 # For testing: 0.02% threshold to see more signals
 self.signal_detector = SignalDetector(threshold_pct=Decimal("0.0002"))
-
+```
 To adjust the statistics logging interval, modify the `run()` method in `src/core/orchestrator.py`:
-
+```
 # Change from 30s to 60s
 stats_30s_task = asyncio.create_task(
     self.periodic_stats_logger(60)  # Change this value
 )
-
+```
 ## Testing
 
 Run the test suite:
