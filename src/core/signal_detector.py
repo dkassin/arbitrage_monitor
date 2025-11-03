@@ -28,9 +28,9 @@ class SignalDetector:
             coinbase_state.best_bid_price is None or
             coinbase_state.best_ask_price is None):
             return None
-        # Naming note: "k_to_c" means comparing Kraken bid vs Coinbase ask
-        # (represents buying on Coinbase, selling on Kraken)
-        # In retrospect its a little confusing but I decided not to change for now
+        # Note: Spread variable names indicate which prices are being compared
+        # k_to_c = comparing Kraken bid to Coinbase ask (trade: buy CB, sell Kraken)
+        # c_to_k = comparing Coinbase bid to Kraken ask (trade: buy Kraken, sell CB)
         spread_scenario_k_to_c = (kraken_state.best_bid_price / coinbase_state.best_ask_price) - Decimal("1")
         spread_scenario_c_to_k = (coinbase_state.best_bid_price / kraken_state.best_ask_price) - Decimal("1")
     
